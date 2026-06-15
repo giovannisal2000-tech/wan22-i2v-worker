@@ -1,0 +1,17 @@
+# ComfyUI extra model paths for RunPod Serverless
+# Network volume mounts at /runpod-volume/
+# Our models are stored under /runpod-volume/ComfyUI/models/ (same structure as the pod)
+
+giant_white_bug:
+  base_path: /runpod-volume/ComfyUI
+  checkpoints: models/checkpoints
+  loras: models/loras
+  vae: models/vae
+  clip: models/clip
+  clip_vision: models/clip_vision
+  unet: models/unet
+  diffusion_models: models/diffusion_models
+  gguf: models/unet
+  upscale_models: models/upscale_models
+  rife: models/rife
+  fonts: models/fonts
