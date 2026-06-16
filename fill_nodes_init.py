@@ -1,31 +1,31 @@
-# Minimal stub — exposes only FL_RIFE and FL_IntToFloat, skips all AI/cloud imports
-try:
-    from .nodes.video.FL_RIFE import FL_RIFE
-except Exception as e:
-    print("FL_RIFE import failed:", e)
-    FL_RIFE = None
-
-try:
-    from .nodes.utility.FL_NumberConverter import FL_IntToFloat, FL_FloatToInt
-except Exception as e:
-    print("FL_IntToFloat import failed:", e)
-    FL_IntToFloat = None
-    FL_FloatToInt = None
+import os, importlib.util
 
 NODE_CLASS_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS = {}
 
-if FL_RIFE is not None:
-    NODE_CLASS_MAPPINGS["FL_RIFE"] = FL_RIFE
-    NODE_DISPLAY_NAME_MAPPINGS["FL_RIFE"] = "FL RIFE Interpolation"
+def try_load_module(fpath, module_name):
+    try:
+        spec = importlib.util.spec_from_file_location(module_name, fpath)
+        if spec is None:
+            return
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        if hasattr(mod, 'NODE_CLASS_MAPPINGS'):
+            NODE_CLASS_MAPPINGS.update(mod.NODE_CLASS_MAPPINGS)
+        if hasattr(mod, 'NODE_DISPLAY_NAME_MAPPINGS'):
+            NODE_DISPLAY_NAME_MAPPINGS.update(mod.NODE_DISPLAY_NAME_MAPPINGS)
+        print(f'[Fill-Nodes] ✓ {module_name}')
+    except Exception as e:
+        print(f'[Fill-Nodes] ✗ {module_name}: {type(e).__name__}: {e}')
 
-if FL_IntToFloat is not None:
-    NODE_CLASS_MAPPINGS["FL_IntToFloat"] = FL_IntToFloat
-    NODE_DISPLAY_NAME_MAPPINGS["FL_IntToFloat"] = "FL Int To Float"
+base_dir = os.path.dirname(os.path.abspath(__file__))
+for root, dirs, files in os.walk(base_dir):
+    dirs[:] = [d for d in dirs if not d.startswith('.') and d != '__pycache__']
+    for fname in files:
+        if fname.endswith('.py') and not fname.startswith('_'):
+            fpath = os.path.join(root, fname)
+            rel_path = os.path.relpath(fpath, base_dir)
+            module_name = rel_path.replace(os.sep, '.')[:-3]
+            try_load_module(fpath, module_name)
 
-if FL_FloatToInt is not None:
-    NODE_CLASS_MAPPINGS["FL_FloatToInt"] = FL_FloatToInt
-    NODE_DISPLAY_NAME_MAPPINGS["FL_FloatToInt"] = "FL Float To Int"
-
-__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
-print("comfyui_fill-nodes stub loaded. Nodes:", list(NODE_CLASS_MAPPINGS.keys()))
+__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
