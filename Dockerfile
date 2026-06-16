@@ -6,6 +6,7 @@ RUN comfy node install comfyui-videohelpersuite && \
     comfy node install rgthree-comfy && \
     comfy node install comfyui-nodes-base && \
     comfy node install comfyui-gguf && \
+    comfy node install comfyui_essentials && \
     comfy node install comfyui-lama-remover || true
 
 # Install CR Animation nodes (CR Simple Text Watermark)
@@ -13,17 +14,12 @@ RUN cd /comfyui/custom_nodes && \
     git clone --depth 1 https://github.com/Suzie1/ComfyUI_Comfyroll_CustomNodes.git && \
     pip install -r ComfyUI_Comfyroll_CustomNodes/requirements.txt 2>/dev/null || true
 
-# Install FastFilmGrain
-RUN cd /comfyui/custom_nodes && \
-    git clone --depth 1 https://github.com/spacepxl/ComfyUI-Fast-Film-Grain.git 2>/dev/null || \
-    git clone --depth 1 https://github.com/Extraltodeus/fast-film-grain-comfyui.git 2>/dev/null || true
-
-# Install fill-nodes (FL_RIFE + FL_IntToFloat) — from GitHub, then patch __init__.py
+# Install fill-nodes (FL_RIFE + FL_IntToFloat + FastFilmGrain) — from GitHub, then patch __init__.py
 RUN cd /comfyui/custom_nodes && \
     git clone --depth 1 https://github.com/filliptm/ComfyUI_Fill-Nodes.git && \
     pip install -r ComfyUI_Fill-Nodes/requirements.txt 2>/dev/null || true
 
-# Patch fill-nodes __init__.py: skip broken AI imports, only expose FL_RIFE + FL_IntToFloat
+# Patch fill-nodes __init__.py: dynamic loader — exposes FL_RIFE, FL_IntToFloat, FastFilmGrain, etc.
 COPY fill_nodes_init.py /comfyui/custom_nodes/ComfyUI_Fill-Nodes/__init__.py
 
 # Download RIFE model needed by FL_RIFE
