@@ -1,7 +1,7 @@
 # WAN 2.2 I2V — RunPod Serverless Worker
 FROM runpod/worker-comfyui:5.8.5-base
 
-# ── Custom nodes from Comfy Registry ─────────────────────────────────────────────
+# ── Custom nodes from Comfy Registry ────────────────────────────────────────────────
 RUN comfy node install comfyui-videohelpersuite && \
     comfy node install rgthree-comfy && \
     comfy node install comfyui-nodes-base && \
@@ -25,8 +25,9 @@ COPY fill_nodes_init.py /comfyui/custom_nodes/ComfyUI_Fill-Nodes/__init__.py
 # Standalone FastFilmGrain node (torch-only, no extra deps)
 COPY fast_film_grain.py /comfyui/custom_nodes/fast_film_grain.py
 
-# Patch ComfyUI-GGUF __init__.py: adds LoaderGGUF alias (gguf_name param) for WAN22 workflow
-COPY gguf_init.py /comfyui/custom_nodes/ComfyUI-GGUF/__init__.py
+# Patch ComfyUI-GGUF: append LoaderGGUF alias to the REAL lowercase comfyui-gguf __init__.py
+COPY patch_gguf.py /tmp/patch_gguf.py
+RUN python3 /tmp/patch_gguf.py
 
 # Download RIFE model needed by FL_RIFE
 RUN mkdir -p /comfyui/models/rife && \
@@ -34,5 +35,5 @@ RUN mkdir -p /comfyui/models/rife && \
     https://github.com/hzwer/ECCV2022-RIFE/releases/download/v4.7/rife47.pth 2>/dev/null || \
     echo "RIFE model download failed — will load from network volume"
 
-# ── Extra model paths: point to network volume structure ──────────────────────
+# ── Extra model paths: point to network volume structure ──────────────────
 COPY extra_model_paths.yaml /comfyui/extra_model_paths.yaml
